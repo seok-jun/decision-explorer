@@ -1,0 +1,301 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>재시도 비교</title>
+<style>
+/* 레이아웃: 위에 실행 전환과 시도 띠, 아래에 한 사건의 값 목록. 한 번에 한 사건만 본다. */
+:root {
+  --bg: #f6f7f9; --panel: #ffffff; --ink: #1a2230; --muted: #5d6878; --line: #d5dae2;
+  --base: #1f5fa8; --contrast: #a3531a; --diff: #fff1c9; --diff-ink: #6b4a00; --gone: #eceff3;
+  --mono: ui-monospace, "Cascadia Mono", Consolas, "D2Coding", monospace;
+  --sans: "Pretendard", "Malgun Gothic", "Apple SD Gothic Neo", system-ui, sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #12161d; --panel: #1a202a; --ink: #e6eaf0; --muted: #98a3b3; --line: #313a48;
+    --base: #7fb2ee; --contrast: #eba36a; --diff: #4a3b10; --diff-ink: #ffe29a; --gone: #222a35;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #12161d; --panel: #1a202a; --ink: #e6eaf0; --muted: #98a3b3; --line: #313a48;
+  --base: #7fb2ee; --contrast: #eba36a; --diff: #4a3b10; --diff-ink: #ffe29a; --gone: #222a35;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--ink); font: 15px/1.55 var(--sans);
+  padding-block: 20px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+main { max-width: 860px; margin: 0 auto; display: flex; flex-direction: column; gap: 16px; }
+h1 { font-size: 20px; margin: 0; text-wrap: balance; }
+h2 { font-size: 14px; margin: 0; color: var(--muted); font-weight: 600; letter-spacing: .02em; }
+p { margin: 0; }
+.lead { color: var(--muted); max-width: 65ch; }
+.bar { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+button { font: inherit; color: var(--ink); background: var(--panel); border: 1px solid var(--line);
+  border-radius: 6px; padding: 6px 12px; cursor: pointer; }
+button:hover { border-color: var(--muted); }
+button:focus-visible { outline: 2px solid var(--base); outline-offset: 2px; }
+button[disabled] { opacity: .45; cursor: default; }
+button[aria-pressed="true"] { border-color: currentColor; font-weight: 700; }
+.run-baseline { color: var(--base); } .run-contrast { color: var(--contrast); }
+.bar button small { color: var(--muted); font-size: 12px; font-weight: 400; }
+.tabs { margin-left: auto; }
+.panel { background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 16px; display: flex; flex-direction: column; gap: 12px; }
+.panel[hidden] { display: none; }
+.strip { display: grid; grid-template-columns: 5.5em repeat(var(--n), minmax(0, 1fr)); gap: 4px; align-items: center; font-size: 13px; }
+.strip .lab { color: var(--muted); }
+.cell { border: 1px solid var(--line); border-radius: 4px; padding: 4px 2px; text-align: center; font-family: var(--mono); background: var(--panel); min-width: 0; }
+.cell.none { background: var(--gone); color: var(--muted); border-style: dashed; }
+.cell.cur { outline: 2px solid currentColor; outline-offset: 1px; font-weight: 700; }
+.cell.head { border: 0; color: var(--muted); font-family: var(--sans); }
+.cell.head.cur { outline: 0; color: var(--ink); }
+.where { font-weight: 700; }
+.vals { display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(0, 1.6fr) auto; gap: 0; border-top: 1px solid var(--line); }
+.vals > div { padding: 8px 6px; border-bottom: 1px solid var(--line); min-width: 0; overflow-wrap: anywhere; }
+.vals .v { font-family: var(--mono); font-variant-numeric: tabular-nums; }
+.vals .k small { display: block; color: var(--muted); font-family: var(--mono); font-size: 12px; }
+.vals .d { background: var(--diff); color: var(--diff-ink); }
+.tag { font-size: 12px; border: 1px solid var(--line); border-radius: 999px; padding: 1px 8px; color: var(--muted); white-space: nowrap; }
+.tag.inf { border-style: dashed; }
+.none-box { background: var(--gone); border: 1px dashed var(--line); border-radius: 6px; padding: 12px; color: var(--muted); }
+.src { font-family: var(--mono); font-size: 12.5px; color: var(--muted); overflow-wrap: anywhere; }
+details { border-top: 1px solid var(--line); padding-top: 10px; }
+summary { cursor: pointer; color: var(--muted); }
+pre { margin: 8px 0 0; font: 12.5px/1.5 var(--mono); overflow-x: auto; white-space: pre; }
+.tw { overflow-x: auto; }
+table { border-collapse: collapse; width: 100%; font-size: 13.5px; }
+th, td { border-bottom: 1px solid var(--line); padding: 7px 8px; text-align: left; vertical-align: top; }
+th { color: var(--muted); font-weight: 600; white-space: nowrap; }
+td { font-family: var(--mono); font-variant-numeric: tabular-nums; }
+td.r { font-family: var(--sans); font-weight: 700; }
+th.changed, td.changed { background: var(--diff); color: var(--diff-ink); }
+ul { margin: 0; padding-left: 1.2em; } li { margin: 2px 0; }
+.limits { color: var(--muted); font-size: 13.5px; }
+kbd { font: 12px var(--mono); border: 1px solid var(--line); border-radius: 4px; padding: 0 5px; }
+</style>
+</head>
+<body>
+<main>
+  <header>
+    <h1>재시도 비교</h1>
+    <p class="lead">같은 실패인데 한쪽은 재시도하고 한쪽은 안 합니다. 재시도 한도는 둘 다 3회입니다.</p>
+  </header>
+
+  <div class="bar" role="group" aria-label="보기 선택">
+    <button id="run-baseline" class="run-baseline" type="button">재시도 함 <small>retryable=true</small></button>
+    <button id="run-contrast" class="run-contrast" type="button">재시도 안 함 <small>retryable=false</small></button>
+    <span class="tabs bar">
+      <button id="view-replay" type="button">시도별 보기</button>
+      <button id="view-table" type="button">표</button>
+    </span>
+  </div>
+
+  <section id="replay" class="panel" aria-label="시도별 보기">
+    <div id="strip" class="strip"></div>
+    <div class="bar">
+      <button id="prev" type="button">← 이전</button>
+      <button id="next" type="button">다음 →</button>
+      <button id="first-diff" type="button">첫 차이</button>
+      <button id="swap" type="button">'재시도 안 함'에서는 어떻게 되는지 보기</button>
+    </div>
+    <p id="where" class="where" aria-live="polite"></p>
+    <div id="detail"></div>
+    <p class="src" id="src"></p>
+    <details>
+      <summary>원본 기록</summary>
+      <pre id="raw"></pre>
+    </details>
+    <p class="limits">단축키: <kbd>←</kbd> <kbd>→</kbd> 이동, <kbd>S</kbd> 바꾸기, <kbd>D</kbd> 첫 차이</p>
+  </section>
+
+  <section id="table" class="panel" aria-label="표" hidden>
+    <div class="tw"><table id="tbl"></table></div>
+  </section>
+
+  <section class="panel limits" aria-label="확인 범위">
+    <h2>확인 범위</h2>
+    <ul id="limits"></ul>
+    <p class="src" id="prov"></p>
+  </section>
+</main>
+
+<script>
+const TRACE = /*TRACE*/{"runs":[{"runId":"baseline","retryable":true,"events":[{"attempt":0,"result":"Failure(userMessage=서버에 못 닿았어, retryable=true)","retryable":true,"maxRetries":3,"decisionRetry":true,"decisionFailure":null},{"attempt":1,"result":"Failure(userMessage=서버에 못 닿았어, retryable=true)","retryable":true,"maxRetries":3,"decisionRetry":true,"decisionFailure":null},{"attempt":2,"result":"Failure(userMessage=서버에 못 닿았어, retryable=true)","retryable":true,"maxRetries":3,"decisionRetry":true,"decisionFailure":null},{"attempt":3,"result":"Failure(userMessage=서버에 못 닿았어, retryable=true)","retryable":true,"maxRetries":3,"decisionRetry":false,"decisionFailure":"Exhausted(userMessage=서버에 못 닿았어)"}]},{"runId":"contrast","retryable":false,"events":[{"attempt":0,"result":"Failure(userMessage=서버에 못 닿았어, retryable=false)","retryable":false,"maxRetries":3,"decisionRetry":false,"decisionFailure":"Exhausted(userMessage=서버에 못 닿았어)"}]}]}/*END*/;
+const META = /*META*/{
+  "commit": "590e6779",
+  "command": "gradlew :app:testDebugUnitTest --tests ...background.TraceCaptureTmpTest (임시 기록 테스트, 실행 후 삭제)",
+  "decisionSrc": "app/.../background/BackgroundSendFailureDecision.kt:36-41",
+  "callSrc": "app/.../background/ChatMessageWorker.kt:126, 135",
+  "limits": [
+    "결정 함수만 실행했습니다. ChatMessageWorker.doWork와 WorkManager는 실행 안 했습니다.",
+    "retry=true면 테스트 코드가 attempt를 1 늘립니다. 워커 재실행은 코드(ChatMessageWorker.kt:135)와 WorkManager 동작으로 추정했습니다.",
+    "실패 값은 테스트 입력입니다. 실제 통신 실패는 아닙니다.",
+    "‘남은 시도 있음?’은 계산, ‘워커 반환값’은 코드 추정입니다. 실행 확인은 안 했습니다.",
+    "다른 SendResult(Success, PartialSuccess, MissingApiKey, DiscardedByRollback)와 재시도 대기 시간은 확인 안 했습니다."
+  ]
+}/*END*/;
+
+const FIELDS = [
+  { key: 'attempt', label: '시도 번호', code: 'attempt (runAttemptCount)', kind: '입력' },
+  { key: 'result', label: '실패 종류', code: 'SendResult', kind: '입력' },
+  { key: 'retryable', label: '재시도 가능?', code: 'result.retryable', kind: '바꾼 값' },
+  { key: 'maxRetries', label: '재시도 한도', code: 'ChatMessageWorker.MAX_RETRIES', kind: '실행 확인' },
+  { key: 'attemptLtMax', label: '남은 시도 있음?', code: 'attempt < maxRetries', kind: '계산' },
+  { key: 'decisionRetry', label: '결정: 재시도', code: 'decision.retry', kind: '실행 확인' },
+  { key: 'decisionFailure', label: '결정: 화면에 알림', code: 'decision.failure', kind: '실행 확인' },
+  { key: 'workerResult', label: '워커 반환값', code: 'ChatMessageWorker.kt:135', kind: '코드 추정' },
+];
+const RUN_LABEL = { baseline: '재시도 함', contrast: '재시도 안 함' };
+const RUN_SHORT_LABEL = { baseline: '재시도 함', contrast: '재시도 안 함' };
+
+// 포착값에서 파생한 항목. 원본 기록에는 없다.
+function enrich(e) {
+  return Object.assign({}, e, {
+    attemptLtMax: e.attempt < e.maxRetries,
+    workerResult: e.decisionRetry ? 'Result.retry()' : 'Result.failure()',
+  });
+}
+const runs = {};
+for (const r of TRACE.runs) {
+  runs[r.runId] = new Map(r.events.map(e => ['attempt:' + e.attempt, { raw: e, v: enrich(e) }]));
+}
+// 사건 대응 키는 "판정@시도 번호". 두 실행의 합집합을 시도 번호 순으로 둔다.
+const keys = [...new Set([...runs.baseline.keys(), ...runs.contrast.keys()])]
+  .sort((a, b) => Number(a.split(':')[1]) - Number(b.split(':')[1]));
+const other = id => id === 'baseline' ? 'contrast' : 'baseline';
+const show = v => v === null ? '없음 (null)' : String(v);
+
+function differs(key, field) {
+  const a = runs.baseline.get(key), b = runs.contrast.get(key);
+  if (!a || !b) return false;
+  return show(a.v[field]) !== show(b.v[field]);
+}
+function keyDiffers(key) {
+  const a = runs.baseline.get(key), b = runs.contrast.get(key);
+  if (!a || !b) return true;
+  return FIELDS.some(f => differs(key, f.key));
+}
+
+const state = { run: 'baseline', i: 0, view: 'replay' };
+const $ = id => document.getElementById(id);
+function el(tag, cls, text) {
+  const n = document.createElement(tag);
+  if (cls) n.className = cls;
+  if (text !== undefined) n.textContent = text;
+  return n;
+}
+
+function renderStrip() {
+  const s = $('strip');
+  s.style.setProperty('--n', keys.length);
+  s.replaceChildren();
+  s.append(el('div', 'lab', ''));
+  keys.forEach((k, i) => s.append(el('div', 'cell head' + (i === state.i ? ' cur' : ''), '시도 ' + k.split(':')[1])));
+  for (const id of ['baseline', 'contrast']) {
+    s.append(el('div', 'lab run-' + id, RUN_SHORT_LABEL[id]));
+    keys.forEach((k, i) => {
+      const ev = runs[id].get(k);
+      const c = el('div', 'cell run-' + id + (ev ? '' : ' none') + (i === state.i && id === state.run ? ' cur' : ''),
+        ev ? (ev.v.decisionRetry ? '재시도' : '끝') : '기록 없음');
+      s.append(c);
+    });
+  }
+}
+
+function renderDetail() {
+  const key = keys[state.i], ev = runs[state.run].get(key);
+  $('where').textContent = RUN_LABEL[state.run] + ' · 시도 ' + key.split(':')[1] + ' (' + (state.i + 1) + '/' + keys.length + ')';
+  $('where').className = 'where run-' + state.run;
+  const d = $('detail');
+  d.replaceChildren();
+  if (!ev) {
+    const last = [...runs[state.run].values()].pop().v;
+    d.append(el('div', 'none-box',
+      '기록 없음. 시도 ' + last.attempt + '에서 재시도 안 함으로 끝났습니다. ' +
+      '앱에서도 여기서 끝날지는 코드 추정입니다.'));
+    $('raw').textContent = '(기록 없음)';
+  } else {
+    const g = el('div', 'vals');
+    for (const f of FIELDS) {
+      const diff = differs(key, f.key);
+      const k = el('div', 'k' + (diff ? ' d' : ''), f.label);
+      k.append(el('small', '', f.code));
+      const v = el('div', 'v' + (diff ? ' d' : ''), show(ev.v[f.key]) + (diff ? '   ← 다름' : ''));
+      const t = el('div', diff ? 'd' : '');
+      t.append(el('span', 'tag' + (f.kind === '코드 추정' || f.kind === '계산' ? ' inf' : ''), f.kind));
+      g.append(k, v, t);
+    }
+    d.append(g);
+    $('raw').textContent = JSON.stringify(ev.raw, null, 2);
+  }
+  $('src').textContent = '결정: ' + META.decisionSrc + ' · 호출: ' + META.callSrc;
+  $('prev').disabled = state.i === 0;
+  $('next').disabled = state.i === keys.length - 1;
+  $('swap').textContent = "'" + RUN_LABEL[other(state.run)] + "'에서는 어떻게 되는지 보기";
+}
+
+function renderTable() {
+  const t = $('tbl');
+  t.replaceChildren();
+  const hr = el('tr');
+  hr.append(el('th', '', '실행'));
+  const tableFields = [FIELDS.find(f => f.key === 'retryable'), ...FIELDS.filter(f => f.key !== 'retryable')];
+  tableFields.forEach(f => hr.append(el('th', f.key === 'retryable' ? 'changed' : '', f.label + ' [' + f.kind + ']')));
+  t.append(hr);
+  for (const id of ['baseline', 'contrast']) {
+    for (const k of keys) {
+      const ev = runs[id].get(k);
+      const tr = el('tr');
+      tr.append(el('td', 'r run-' + id, RUN_SHORT_LABEL[id]));
+      if (!ev) {
+        tr.append(el('td', 'changed', '기록 없음'));
+        tr.append(el('td', '', k.split(':')[1]));
+        const td = el('td', '', '이 시도 전에 끝남');
+        td.colSpan = tableFields.length - 2;
+        tr.append(td);
+      } else {
+        tableFields.forEach(f => tr.append(el('td', f.key === 'retryable' ? 'changed' : '', show(ev.v[f.key]))));
+      }
+      t.append(tr);
+    }
+  }
+}
+
+function render() {
+  for (const id of ['baseline', 'contrast']) $('run-' + id).setAttribute('aria-pressed', String(state.run === id));
+  for (const v of ['replay', 'table']) {
+    $('view-' + v).setAttribute('aria-pressed', String(state.view === v));
+    $(v).hidden = state.view !== v;
+  }
+  renderStrip(); renderDetail();
+}
+
+function go(i) { state.i = Math.max(0, Math.min(keys.length - 1, i)); render(); }
+function firstDiff() { const i = keys.findIndex(keyDiffers); if (i >= 0) go(i); }
+function swap() { state.run = other(state.run); render(); }
+function setView(v) { state.view = v; render(); }
+
+$('prev').onclick = () => go(state.i - 1);
+$('next').onclick = () => go(state.i + 1);
+$('first-diff').onclick = firstDiff;
+$('swap').onclick = swap;
+$('run-baseline').onclick = () => { state.run = 'baseline'; render(); };
+$('run-contrast').onclick = () => { state.run = 'contrast'; render(); };
+$('view-replay').onclick = () => setView('replay');
+$('view-table').onclick = () => setView('table');
+document.addEventListener('keydown', e => {
+  if (state.view !== 'replay' || e.ctrlKey || e.metaKey || e.altKey) return;
+  if (e.key === 'ArrowLeft') go(state.i - 1);
+  else if (e.key === 'ArrowRight') go(state.i + 1);
+  else if (e.key === 's' || e.key === 'S') swap();
+  else if (e.key === 'd' || e.key === 'D') firstDiff();
+});
+
+for (const line of META.limits) $('limits').append(el('li', '', line));
+$('prov').textContent = '코드 버전 ' + META.commit + ' · 실행: ' + META.command;
+renderTable(); render();
+</script>
+</body>
+</html>

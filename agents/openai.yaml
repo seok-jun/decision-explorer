@@ -1,6 +1,4 @@
 interface:
-  display_name: "Decision Explorer"
-  short_description: "Explore choices through concrete cases and consequences"
-  default_prompt: "Use $decision-explorer to show the inputs, actions, alternative outcomes, and one important boundary condition for the decision I need to make."
-policy:
-  allow_implicit_invocation: true
+  display_name: "Behavior Explorer"
+  short_description: "Understand behavior boundaries and delegate verification"
+  default_prompt: "Use $behavior-explorer to show the important behavior boundary in this task, explore only what I need to understand, and identify what to delegate to verification."
