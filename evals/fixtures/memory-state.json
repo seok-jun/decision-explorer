@@ -1,0 +1,17 @@
+{
+  "decision_id": "memory-timeout-policy",
+  "revision": 1,
+  "scope": "Read-only memory lookup timeout during chat",
+  "status": "exploring",
+  "preview_option_id": "retry",
+  "selected_option_id": null,
+  "response": null,
+  "conditions": {
+    "ask": {
+      "user_knowledge": "forgotten"
+    },
+    "retry": {
+      "retry_result": "failed"
+    }
+  }
+}

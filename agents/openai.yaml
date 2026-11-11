@@ -1,0 +1,6 @@
+interface:
+  display_name: "Decision Explorer"
+  short_description: "Explore choices through concrete cases and consequences"
+  default_prompt: "Use $decision-explorer to show the inputs, actions, alternative outcomes, and one important boundary condition for the decision I need to make."
+policy:
+  allow_implicit_invocation: true

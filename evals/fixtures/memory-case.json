@@ -1,0 +1,173 @@
+{
+  "schema_version": 1,
+  "decision_id": "memory-timeout-policy",
+  "revision": 1,
+  "scope": "Read-only memory lookup timeout during chat",
+  "question": "기억 조회가 실패하면 어떻게 안내할까?",
+  "input": "어제 약속 몇 시였지? 시간은 이전 대화에만 있음.",
+  "event": "읽기 조회가 시간 초과했다고 가정",
+  "options": [
+    {
+      "id": "ask",
+      "label": "사용자에게 시간 다시 묻기"
+    },
+    {
+      "id": "retry",
+      "label": "중단하고 사용자 재시도 안내"
+    }
+  ],
+  "controls": [
+    {
+      "id": "user_knowledge",
+      "values": [
+        "unknown",
+        "supplied",
+        "forgotten"
+      ],
+      "effects": {
+        "ask": [
+          "outcome",
+          "next"
+        ]
+      }
+    },
+    {
+      "id": "retry_result",
+      "values": [
+        "unknown",
+        "recovered",
+        "failed"
+      ],
+      "effects": {
+        "retry": [
+          "outcome",
+          "next"
+        ]
+      }
+    }
+  ],
+  "claims": [
+    {
+      "id": "ask-unknown",
+      "text": "사용자가 시간을 기억하는지 미확인",
+      "kind": "illustrative",
+      "limitations": "실제 실행 로그가 없는 설명용 조건부 사례"
+    },
+    {
+      "id": "ask-supplied",
+      "text": "사용자가 제공한 시간으로 대화 가능; 원래 기록과 일치 여부 미확인",
+      "kind": "illustrative",
+      "limitations": "실제 실행 로그가 없는 설명용 조건부 사례"
+    },
+    {
+      "id": "ask-forgotten",
+      "text": "시간 확인 불가",
+      "kind": "illustrative",
+      "limitations": "실제 실행 로그가 없는 설명용 조건부 사례"
+    },
+    {
+      "id": "retry-unknown",
+      "text": "재시도 결과 미확인",
+      "kind": "illustrative",
+      "limitations": "실제 실행 로그가 없는 설명용 조건부 사례"
+    },
+    {
+      "id": "retry-recovered",
+      "text": "재조회에서 해당 약속 시간을 찾았다고 가정",
+      "kind": "illustrative",
+      "limitations": "실제 실행 로그가 없는 설명용 조건부 사례"
+    },
+    {
+      "id": "retry-failed",
+      "text": "재조회도 시간 초과하여 시간 확인 불가",
+      "kind": "illustrative",
+      "limitations": "실제 실행 로그가 없는 설명용 조건부 사례"
+    }
+  ],
+  "cases": [
+    {
+      "id": "ask-unknown",
+      "option_id": "ask",
+      "when": {
+        "user_knowledge": "unknown"
+      },
+      "results": {
+        "outcome": "사용자가 시간을 기억하는지 미확인",
+        "next": "시간을 알려줄 수 있는지 묻고 대기"
+      },
+      "claim_ids": [
+        "ask-unknown"
+      ]
+    },
+    {
+      "id": "ask-supplied",
+      "option_id": "ask",
+      "when": {
+        "user_knowledge": "supplied"
+      },
+      "results": {
+        "outcome": "사용자가 제공한 시간으로 대화 가능; 원래 기록과 일치 여부 미확인",
+        "next": "사용자 제공 정보임을 유지"
+      },
+      "claim_ids": [
+        "ask-supplied"
+      ]
+    },
+    {
+      "id": "ask-forgotten",
+      "option_id": "ask",
+      "when": {
+        "user_knowledge": "forgotten"
+      },
+      "results": {
+        "outcome": "시간 확인 불가",
+        "next": "모른다고 알리고 대체 근거 탐색"
+      },
+      "claim_ids": [
+        "ask-forgotten"
+      ]
+    },
+    {
+      "id": "retry-unknown",
+      "option_id": "retry",
+      "when": {
+        "retry_result": "unknown"
+      },
+      "results": {
+        "outcome": "재시도 결과 미확인",
+        "next": "사용자에게 재시도 방법 안내"
+      },
+      "claim_ids": [
+        "retry-unknown"
+      ]
+    },
+    {
+      "id": "retry-recovered",
+      "option_id": "retry",
+      "when": {
+        "retry_result": "recovered"
+      },
+      "results": {
+        "outcome": "재조회에서 해당 약속 시간을 찾았다고 가정",
+        "next": "조회된 시간으로 답변"
+      },
+      "claim_ids": [
+        "retry-recovered"
+      ]
+    },
+    {
+      "id": "retry-failed",
+      "option_id": "retry",
+      "when": {
+        "retry_result": "failed"
+      },
+      "results": {
+        "outcome": "재조회도 시간 초과하여 시간 확인 불가",
+        "next": "실패를 알리고 추가 확인 방법 안내"
+      },
+      "claim_ids": [
+        "retry-failed"
+      ]
+    }
+  ]
+}

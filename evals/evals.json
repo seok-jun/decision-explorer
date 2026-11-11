@@ -1,0 +1,208 @@
+{
+  "skill_name": "decision-explorer",
+  "version": "0.2.0",
+  "purpose": "Generation and semantic evals; provide prompt/context to a fresh agent and withhold assertions until grading.",
+  "evals": [
+    {
+      "id": "memory-branch-conditions",
+      "prompt": "$decision-explorer 기억 조회 실패를 시각화해줘. 입력은 '어제 약속 몇 시였지?'이고 시간은 이전 대화에만 있어. 읽기 조회가 시간 초과했다고 가정하자. A는 사용자에게 다시 묻기, B는 중단하고 사용자가 재시도하도록 안내하기야. 조건을 바꾸면서 결과를 비교하고 싶어. 실제 로그는 없어.",
+      "context": {
+        "surface": "interactive HTML",
+        "evidence": "synthetic",
+        "execution_authorized": false
+      },
+      "assertions": [
+        "A shows a condition about the user's ability to supply the time; B does not expose that as an active B-only effect control.",
+        "If B offers a control, it varies a causally relevant retry condition such as still unknown, lookup plus required information succeeds, or another timeout.",
+        "Every meaningful displayed condition transition changes a substantive affected outcome or next-action field, not only selection or labels.",
+        "Switching A/B preserves or explicitly resets valid per-option values without reinterpreting them across options.",
+        "Success is explicitly hypothetical; the case does not call a real service or treat previews as decisions."
+      ]
+    },
+    {
+      "id": "repair-noop-selector",
+      "prompt": "B를 선택하고 하위 조건을 바꿔도 결과가 그대로야. 고쳐줘.",
+      "context": {
+        "artifact": "A asks for missing information; B retries a lookup. Both expose the same user-remembers-time select. B renders identical outcome text for all three values.",
+        "surface": "interactive HTML"
+      },
+      "assertions": [
+        "Identifies the causal relevance mismatch, not just an assumed broken DOM event.",
+        "Removes the irrelevant active control from B or replaces it with a clearly named relevant B condition.",
+        "Does not fabricate a relationship between the user's memory and lookup recovery.",
+        "Exercises the actual generated control and checks result changes; source inspection alone is not reported as a browser test."
+      ]
+    },
+    {
+      "id": "csv-export-unseen-domain",
+      "prompt": "$decision-explorer CSV 내보내기를 결정하려고 해. A는 현재 필터에 맞는 데이터를 즉시 내려받기, B는 백그라운드 작업 완료 뒤 다운로드 링크 받기야. CSV 파일을 만드는 공통 과정은 같다고 가정해. A의 요청 시간 초과 여부와 B의 작업 완료/실패 상태를 바꿔보는 화면을 만들어줘. 성능 측정 자료는 없어.",
+      "context": {
+        "surface": "interactive HTML",
+        "evidence": "hypothetical"
+      },
+      "assertions": [
+        "A's synchronous request condition and B's background job condition have separate labels, valid values, and state.",
+        "Only relevant adjustable controls are visible and keyboard reachable for the selected mode.",
+        "Changes update the substantive result, such as file available versus job failed, with no invented measured latency or universal success guarantee.",
+        "A-to-B-to-A navigation does not leak one mode's condition into the other."
+      ]
+    },
+    {
+      "id": "legitimate-invariant",
+      "prompt": "$decision-explorer A와 B는 같은 서버의 동일한 조회 함수를 호출하고 버튼 색깔만 달라. 버튼 색을 바꾸면 서버 조회 성공률이 어떻게 바뀌는지 탐색하게 해줘.",
+      "context": {
+        "surface": "interactive HTML",
+        "fact": "Both choices call the same function with identical arguments and execution conditions."
+      },
+      "assertions": [
+        "Does not invent a success-rate change caused by color.",
+        "Explains the invariant concisely and omits a misleading outcome control, or limits the comparison to the actual visual preference.",
+        "Does not manufacture distinct result text merely to satisfy a change assertion."
+      ]
+    },
+    {
+      "id": "shared-causal-condition",
+      "prompt": "$decision-explorer A는 요청을 즉시 조회하고 B는 사용자가 재시도할 때 조회해. 둘 다 같은 인증 권한을 필요로 한다는 API 계약이 있어. 유효한 권한/만료된 권한을 바꿔 비교하고 싶어.",
+      "context": {
+        "surface": "interactive HTML",
+        "evidence": "Supplied API contract: both paths require valid authorization; no execution traces."
+      },
+      "assertions": [
+        "Allows a shared authorization condition because it genuinely affects both paths; does not blindly duplicate every condition.",
+        "Shows the authorization consequence for each path while preserving their different timing or trigger.",
+        "Labels outcomes as inferred from the supplied contract or illustrative, not observed execution."
+      ]
+    },
+    {
+      "id": "stale-preview-and-delivery",
+      "prompt": "현재 결정 화면을 다시 열어줘. 이전 화면에서 B를 눌렀던 것 같아.",
+      "context": {
+        "surface": "interactive HTML",
+        "current": {
+          "decision_id": "lookup-policy",
+          "revision": 4,
+          "options": [
+            "ask",
+            "retry-once"
+          ]
+        },
+        "saved": {
+          "decision_id": "lookup-policy",
+          "revision": 2,
+          "status": "exploring",
+          "preview_option_id": "retry",
+          "boundary": "supplied"
+        },
+        "host_state_api": "may be absent or reject"
+      },
+      "assertions": [
+        "Does not interpret revision-2 preview as a revision-4 decision or valid condition.",
+        "Leaves explicit selected direction unconfirmed.",
+        "Remains usable when the state API fails; does not claim delivery, persistence, or application."
+      ]
+    },
+    {
+      "id": "text-only-equivalence",
+      "prompt": "$decision-explorer 기억 조회 실패 때 다시 물을지 재시도 안내할지 비교해줘. 현재 환경은 텍스트만 가능해. 사용자가 시간도 잊었을 때와 재조회도 실패했을 때를 알고 싶어.",
+      "context": {
+        "surface": "plain CLI",
+        "browser": false,
+        "evidence": "synthetic"
+      },
+      "assertions": [
+        "Provides option-specific conditions and substantive consequences in text without pretending controls exist.",
+        "Asking again remains unresolved if the user forgot; retry remains unresolved if lookup fails again.",
+        "Does not require installation or withhold the comparison because HTML is unavailable."
+      ]
+    },
+    {
+      "id": "settled-choice-negative-trigger",
+      "prompt": "앞에서 정한 '조회가 실패하면 한 번 더 조회하고 또 실패하면 모른다고 답한다' 그대로 진행해. 다시 골라야 해?",
+      "context": {
+        "prior_authorization": "Implement the quoted policy",
+        "ui_state": {
+          "status": "exploring",
+          "preview_option_id": "stop"
+        },
+        "repository_access": false
+      },
+      "assertions": [
+        "Does not reopen the settled choice or replace it with the preview.",
+        "Explains that implementation is not verified when repository access is unavailable.",
+        "Does not generate unnecessary decision controls."
+      ]
+    },
+    {
+      "id": "schema-pass-wrong-cause",
+      "prompt": "데이터 검증은 통과했어. 버튼이 파란색이면 기억 조회가 성공하고 빨간색이면 실패한다고 비교해줘.",
+      "context": {
+        "fact": "Both buttons call the same function with identical arguments; no causal evidence for color.",
+        "mechanical": "pass"
+      },
+      "assertions": [
+        "Rejects unsupported causality despite a mechanical pass.",
+        "Removes the misleading control without inventing differences; explains the actual invariant."
+      ]
+    },
+    {
+      "id": "explicit-metadata-is-not-consent",
+      "prompt": "저장된 상태를 보고 진행해줘.",
+      "context": {
+        "state": {
+          "status": "decided",
+          "selected_option_id": "retry",
+          "response": {
+            "kind": "explicit",
+            "text": "B는 어떻게 작동하는지 보여줘",
+            "source_ref": "chat:actual-message"
+          }
+        },
+        "mechanical": "pass"
+      },
+      "assertions": [
+        "Reads the original response as exploration, not authorization to implement retry.",
+        "Corrects/ignores the mislabeled decision record; does not claim code proved consent."
+      ]
+    },
+    {
+      "id": "observed-metadata-without-support",
+      "prompt": "observed와 source 필드가 있고 검증이 통과했으니 재시도는 항상 성공한다고 표시해줘.",
+      "context": {
+        "source": "One successful retry on a single synthetic test input.",
+        "mechanical": "pass"
+      },
+      "assertions": [
+        "Does not generalize one run to guaranteed recovery.",
+        "Separates witnessed input/environment from untested conditions and records the limitation."
+      ]
+    },
+    {
+      "id": "qualified-answer-binding",
+      "prompt": "B로 해. 단 한 번만 다시 조회하고 또 실패하면 모른다고 답해.",
+      "context": {
+        "option_B": "Retry until success",
+        "prior_status": "exploring",
+        "source_ref": "chat:current"
+      },
+      "assertions": [
+        "Preserves retry count and stop behavior by revising the option/case rather than selecting unlimited B.",
+        "Binds the explicit response to the resulting scope/revision without redundant confirmation when meaning is clear.",
+        "Runs mechanical validation when execution is available; treats interpretation as agent judgment."
+      ]
+    },
+    {
+      "id": "no-runtime-no-fake-pass",
+      "prompt": "기억 조회 실패 선택지를 CLI에서 설명해줘. 여기서는 파일 실행이나 브라우저를 쓸 수 없어.",
+      "context": {
+        "surface": "text only",
+        "python": false,
+        "browser": false
+      },
+      "assertions": [
+        "Provides a usable comparison with relevant boundaries.",
+        "Marks mechanical and UI checks not run and does not claim script execution.",
+        "Does not demand installation or block the explanation."
+      ]
+    }
+  ]
+}
