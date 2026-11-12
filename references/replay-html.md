@@ -3,7 +3,7 @@
 ## When it is worth generating
 Use when the question requires repeated comparison of the same values/events or tracking state across a sequence, and keeping position can reduce remembering and searching.
 Prefer chat or a small table for a short answer. Do not generate HTML just because a handoff occurred or a numerical threshold was crossed.
-Start from [the working example](../assets/replay-example.html) and [its raw trace](../assets/replay-example-trace.json); these are copied experiment artifacts, not a general renderer or data contract.
+Start from [the working example](../assets/replay-example.html) and [its raw trace](../assets/replay-example-trace.json); these are artifacts of one experiment, not a general renderer or data contract.
 The example embeds its trace and includes the same-data table used in evaluation. Its internal run IDs are not user-facing case names.
 Its abbreviated source paths and command are historical provenance, not a complete reproduction recipe; resolve exact locations for a new case.
 

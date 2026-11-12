@@ -69,7 +69,7 @@ table { border-collapse: collapse; width: 100%; font-size: 13.5px; }
 th, td { border-bottom: 1px solid var(--line); padding: 7px 8px; text-align: left; vertical-align: top; }
 th { color: var(--muted); font-weight: 600; white-space: nowrap; }
 td { font-family: var(--mono); font-variant-numeric: tabular-nums; }
-td.r { font-family: var(--sans); font-weight: 700; }
+td.r { font-family: var(--sans); font-weight: 700; white-space: nowrap; }
 th.changed, td.changed { background: var(--diff); color: var(--diff-ink); }
 ul { margin: 0; padding-left: 1.2em; } li { margin: 2px 0; }
 .limits { color: var(--muted); font-size: 13.5px; }
@@ -139,7 +139,7 @@ const META = /*META*/{
 
 const FIELDS = [
   { key: 'attempt', label: '시도 번호', code: 'attempt (runAttemptCount)', kind: '입력' },
-  { key: 'result', label: '실패 종류', code: 'SendResult', kind: '입력' },
+  { key: 'result', label: '실패 종류', code: 'SendResult', kind: '입력', echoes: '재시도 가능?' },
   { key: 'retryable', label: '재시도 가능?', code: 'result.retryable', kind: '바꾼 값' },
   { key: 'maxRetries', label: '재시도 한도', code: 'ChatMessageWorker.MAX_RETRIES', kind: '실행 확인' },
   { key: 'attemptLtMax', label: '남은 시도 있음?', code: 'attempt < maxRetries', kind: '계산' },
@@ -222,7 +222,8 @@ function renderDetail() {
       const diff = differs(key, f.key);
       const k = el('div', 'k' + (diff ? ' d' : ''), f.label);
       k.append(el('small', '', f.code));
-      const v = el('div', 'v' + (diff ? ' d' : ''), show(ev.v[f.key]) + (diff ? '   ← 다름' : ''));
+      const v = el('div', 'v' + (diff ? ' d' : ''), show(ev.v[f.key]) +
+        (diff ? (f.echoes ? "   ← 다름 ('" + f.echoes + "' 값이 들어 있어서)" : '   ← 다름') : ''));
       const t = el('div', diff ? 'd' : '');
       t.append(el('span', 'tag' + (f.kind === '코드 추정' || f.kind === '계산' ? ' inf' : ''), f.kind));
       g.append(k, v, t);
